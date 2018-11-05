@@ -1,22 +1,24 @@
 // main.js
 
 // initialize map
+/*center was spelled wrong*/
 var map = L.map("map", {
-    centr: [46.73, -92.107],
+    center: [46.73, -92.107],
     zoom: 11
 });
 
 // add base layer
+/* the add to map was add to mop*/
 var OpenStreetMap_Mapnik = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 	maxZoom: 19,
 	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-}).addTo(mop);
+}).addTo(map);
 
 // create request for GeoJSON
 var request = new Promise(function(resolve, reject){
 	var request = new XMLHttpRequest();
 	request.addEventListener("load", function(){ resolve(this.responseText) });
-	request.open("GET", "data/duluthprecinctsWGS84.geojson");
+	request.open("GET", "data/duluth_precincts_WGS84.geojson");
 	request.send();
 });
 
@@ -40,19 +42,37 @@ request.then(function(values){
 		    	// console.log('totalVote:', totalVote);
 		    	// console.log('thirdPartyVote:', thirdPartyVote);
 		    	console.log('pct3rd:', thirdPartyPct);
+                
+                var twoPartyVote = demVote+repVote
+                
+                var repPer = Math.round(repVote/totalVote*100)
+                var demPer = Math.round(demVote/totalVote*100)
+                console.log('percent:', demPer);
 
 		    	// assign colors from the ColorBrewer yellow-green scale
 		    	var fill;
 		    	// equal interval classification
-		    	// 7% or less
-		    	if (thirdPartyPct <= 7) {
-		    		fill = '#f7fcb9';
+		    	// 70% or greater
+		    	if (demPer >= 70) {
+		    		fill = '#0571b0';
 		    	}
-		    	// 11% or less
-		    	else if (thirdPartyPct <= 11) {
-		    		fill = '#addd8e';
+		    	// 65% or greater
+		    	else if (demPer >= 65) {
+		    		fill = '#92c5de';
+                }
+                // 60% or greater
+                else if (demPer >= 60){
+                    fill = '#f7f7f7'
 		    	}
-		    	// 12% or more
+                // 55% or greater
+                else if (demPer >= 55){
+                    fill = '#f4a582'
+                }
+                // 50% or greater
+                else if (demPer >= 50){
+                    fill = '#ca0020'
+                }
+		    	// whatever else
 		    	else {
 		    		fill = '#31a354';
 		    	}
@@ -80,7 +100,9 @@ request.then(function(values){
 		// Leaflet documentation explains:
 		// "If a Function is passed it will receive the layer as the first
 		// argument and should return a String or HTMLElement."
-		.bindPoopup(function (layer){
+           
+        /*added the correct syntax for bindpopup*/
+		precinctsLayer.bindPopup(function (layer){
 			// create variables to be displayed in popup
 			var demVote = layer.feature.properties.USPRSDFL;
 		    var repVote = layer.feature.properties.USPRSR;
@@ -91,7 +113,7 @@ request.then(function(values){
 		    var html = "<h4>Precinct: "+pctName+"</h4>"+
 		    	"<table><tr><td>Democratic votes: </td><td>"+demVote+"</td></tr>"+
 		    	"<tr><td>Republican votes: </td><td>"+repVote+"</td></tr>"+
-		    	"<tr><td>Tomfoolery: </td><td>"+balderdash+"</td></tr>"+
+		    	"<tr><td>Total Votes: </td><td>"+totalVote+"</td></tr>"+
 		    	"<tr><td>Third party votes: </td><td>"+(totalVote-demVote-repVote)+"</td></tr></table>";
 
 		    return html;
